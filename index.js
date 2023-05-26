@@ -39,6 +39,40 @@ const projectSchema = Joi.object({
 })
 
 
+const scrollTags = (contact,tags, index=0) => {
+    callTagActivecampaign(contact,tags[index]).then(tag => {
+        if (index < tags.length - 1) {
+            scrollTags(contact,tags, index + 1)
+        }
+    })
+}
+
+const callTagActivecampaign = (contact, tag) => {
+    return new Promise((resolve, reject) => {
+
+        let dataContactTag = {
+            "contactTag": {
+                contact,
+                tag
+            }
+        }
+
+        axios.post(`${baseUrl}/contactTags`, dataContactTag, {
+            headers: {
+                'content-type': 'text/json',
+                "Api-Token": apiKey
+            }
+        }).then(contactTag => {
+            resolve(true)
+        }).catch(errorContactTag => {
+            reject(false)
+        })
+
+    })
+}
+
+
+
 const userExist = (contact) => {
 
 
@@ -91,50 +125,11 @@ const newContact = (contact)=> {
         "Api-Token": apiKey
     }
     }).then(newContact => {
-            let dataContactTag = {
-                "contactTag": {
-                    "contact": newContact.data.contact.id,
-                    "tag": "37"
-                }
-            }
+        const dataArray = ["37","40", ...(contact.gdpr === true ? ["38"] : [])]
 
-        axios.post(`${baseUrl}/contactTags`, dataContactTag, {
-            headers: {
-                'content-type': 'text/json',
-                "Api-Token": apiKey
-            }
-        }).then(contactTag => {
-            if (contact.gdpr === true){
-                let dataContactTagGdpr = {
-                    "contactTag": {
-                        "contact": newContact.data.contact.id,
-                        "tag": "38"
-                    }
-                }
-                axios.post(`${baseUrl}/contactTags`, dataContactTagGdpr, {
-                    headers: {
-                        'content-type': 'text/json',
-                        "Api-Token": apiKey
-                    }
-                }).then(tagGdpr =>{
-                    console.log('tag gdpr e privacy inserita')
-                }).catch(tagGdprErr => {
-                    console.log('Gdpr tag non riuscita a inserire per contact id '+newContact.data.contact.id)
-                })
-            }
-            else {
-                console.log('tag privacy inserita')
-            }
+        scrollTags(newContact.data.contact.id, dataArray)
 
-
-
-        }).catch(errorContactTag => {
-            console.log('inserimento tag al contatto errato' + errorContactTag +' id contatto ' +newContact.data.contact.id)
-        })
-
-    }).catch(newContactError => {
-        console.log('inserimento nuovo contatto errato ' +newContactError)
-    })
+            })
 }
 
 
@@ -157,7 +152,7 @@ const newProject = (contact)=> {
                     "value": contact.message.toString()
                 },
                 {
-                    "field": "23",
+                    "field": "26",
                     "value": contact.budget.toString()
                 },
                 {
@@ -181,48 +176,12 @@ const newProject = (contact)=> {
             "Api-Token": apiKey
         }
     }).then(newContact => {
-        let dataContactTag = {
-            "contactTag": {
-                "contact": newContact.data.contact.id,
-                "tag": "37"
-            }
-        }
+        const dataArray = ["37","39", ...(contact.gdpr === true ? ["38"] : [])]
 
-        axios.post(`${baseUrl}/contactTags`, dataContactTag, {
-            headers: {
-                'content-type': 'text/json',
-                "Api-Token": apiKey
-            }
-        }).then(contactTag => {
-            if (contact.gdpr === true){
-                let dataContactTagGdpr = {
-                    "contactTag": {
-                        "contact": newContact.data.contact.id,
-                        "tag": "38"
-                    }
-                }
-                axios.post(`${baseUrl}/contactTags`, dataContactTagGdpr, {
-                    headers: {
-                        'content-type': 'text/json',
-                        "Api-Token": apiKey
-                    }
-                }).then(tagGdpr =>{
-                    console.log('tag gdpr e privacy inserita')
-                }).catch(tagGdprErr => {
-                    console.log('Gdpr tag non riuscita a inserire per contact id '+newContact.data.contact.id)
-                })
-            }
-            else {
-                console.log('tag privacy inserita')
-            }
+        scrollTags(newContact.data.contact.id, dataArray)
 
-
-
-        }).catch(errorContactTag => {
-            console.log('inserimento tag al contatto errato' + errorContactTag +' id contatto ' +newContact.data.contact.id)
-        })
-
-    }).catch(newContactError => {
+    }
+        ).catch(newContactError => {
         console.log('inserimento nuovo contatto errato ' +newContactError)
     })
 }
